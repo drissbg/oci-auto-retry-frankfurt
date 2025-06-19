@@ -1,9 +1,12 @@
-
 import oci
 import os
 import time
 import smtplib
 from email.mime.text import MIMEText
+
+# Write the private key from the environment variable to a file
+with open("/app/oci_api_key.pem", "w") as f:
+    f.write(os.environ["OCI_PRIVATE_KEY"])
 
 # Load OCI config from env vars
 config = {
@@ -11,7 +14,7 @@ config = {
     "tenancy": os.getenv("OCI_TENANCY_ID"),
     "user": os.getenv("OCI_USER_ID"),
     "fingerprint": os.getenv("OCI_KEY_FINGERPRINT"),
-    "key_file": os.getenv("OCI_PRIVATE_KEY_FILENAME", "/app/oci_api_key.pem")
+    "key_file": "/app/oci_api_key.pem"
 }
 
 subnet_id = os.getenv("OCI_SUBNET_ID")

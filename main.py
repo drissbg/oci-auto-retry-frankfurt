@@ -4,6 +4,12 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 
+# Write OCI API key to file from environment variable
+pem_content = os.getenv("OCI_API_KEY")
+if pem_content:
+    with open("/app/oci_api_key.pem", "w") as f:
+        f.write(pem_content)
+
 # Write the private key from the environment variable to a file
 with open("/app/oci_api_key.pem", "w") as f:
     f.write(os.environ["OCI_PRIVATE_KEY"])

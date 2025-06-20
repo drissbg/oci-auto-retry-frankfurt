@@ -4,17 +4,24 @@ import time
 import smtplib
 from email.mime.text import MIMEText
 from oci.signer import Signer
+from base64 import b64decode
 
-# Use in-memory signer with private key string from environment
+# Load environment variables
+private_key_str = os.getenv("OCI_PRIVATE_KEY", "").replace("\\n", "\n")
+fingerprint = os.getenv("OCI_KEY_FINGERPRINT")
+user_id = os.getenv("OCI_USER_ID")
+tenancy_id = os.getenv("OCI_TENANCY_ID")
+region = os.getenv("OCI_REGION")
+
 signer = Signer(
-    tenancy=os.getenv("OCI_TENANCY_ID"),
-    user=os.getenv("OCI_USER_ID"),
-    fingerprint=os.getenv("OCI_KEY_FINGERPRINT"),
-    private_key=os.getenv("OCI_API_KEY")
+    tenancy=tenancy_id,
+    user=user_id,
+    fingerprint=fingerprint,
+    private_key=private_key_str
 )
 
 config = {
-    "region": os.getenv("OCI_REGION")
+    "region": region
 }
 
 subnet_id = os.getenv("OCI_SUBNET_ID")
@@ -52,7 +59,7 @@ def attempt_instance(ad, compute):
         print(f"[TRYING] {ad}")
         launch_details = oci.core.models.LaunchInstanceDetails(
             availability_domain=ad.strip(),
-            compartment_id=os.getenv("OCI_TENANCY_ID"),
+            compartment_id=tenancy_id,
             shape=shape,
             source_details=oci.core.models.InstanceSourceViaImageDetails(
                 source_type="image",

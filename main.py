@@ -3,24 +3,19 @@ import os
 import time
 import smtplib
 from email.mime.text import MIMEText
+from oci.signer import Signer
 
-# Write OCI API key to file from environment variable
-pem_content = os.getenv("OCI_API_KEY")
-if pem_content:
-    with open("/app/oci_api_key.pem", "w") as f:
-        f.write(pem_content)
+# Use in-memory signer (no file access)
+signer = Signer(
+    tenancy=os.getenv("OCI_TENANCY_ID"),
+    user=os.getenv("OCI_USER_ID"),
+    fingerprint=os.getenv("OCI_KEY_FINGERPRINT"),
+    private_key=os.getenv("OCI_API_KEY")
+)
 
-# Write the private key from the environment variable to a file
-with open("/app/oci_api_key.pem", "w") as f:
-    f.write(os.environ["OCI_PRIVATE_KEY"])
-
-# Load OCI config from env vars
+# Basic config with only region
 config = {
-    "region": os.getenv("OCI_REGION"),
-    "tenancy": os.getenv("OCI_TENANCY_ID"),
-    "user": os.getenv("OCI_USER_ID"),
-    "fingerprint": os.getenv("OCI_KEY_FINGERPRINT"),
-    "key_file": "/app/oci_api_key.pem"
+    "region": os.getenv("OCI_REGION")
 }
 
 subnet_id = os.getenv("OCI_SUBNET_ID")
@@ -58,7 +53,7 @@ def attempt_instance(ad, compute):
         print(f"[TRYING] {ad}")
         launch_details = oci.core.models.LaunchInstanceDetails(
             availability_domain=ad.strip(),
-            compartment_id=config["tenancy"],
+            compartment_id=os.getenv("OCI_TENANCY_ID"),
             shape=shape,
             source_details=oci.core.models.InstanceSourceViaImageDetails(
                 source_type="image",
@@ -88,7 +83,7 @@ def attempt_instance(ad, compute):
         return False
 
 def main():
-    compute = oci.core.ComputeClient(config)
+    compute = oci.core.ComputeClient(config, signer=signer)
     while True:
         for ad in ads:
             if attempt_instance(ad, compute):

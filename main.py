@@ -5,7 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 from oci.signer import Signer
 
-# Use in-memory signer (no file access)
+# Use in-memory signer with private key string from environment
 signer = Signer(
     tenancy=os.getenv("OCI_TENANCY_ID"),
     user=os.getenv("OCI_USER_ID"),
@@ -13,7 +13,6 @@ signer = Signer(
     private_key=os.getenv("OCI_API_KEY")
 )
 
-# Basic config with only region
 config = {
     "region": os.getenv("OCI_REGION")
 }
